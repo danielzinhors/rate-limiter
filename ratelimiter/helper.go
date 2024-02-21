@@ -1,15 +1,13 @@
-package helpers
+package ratelimiter
 
 import (
 	"fmt"
 	"os"
 	"strconv"
 	"time"
-
-	configiguracao "github.com/danielzinhors/rate-limiter/ratelimiter/internal/config"
 )
 
-func PrintfD(config *configiguracao.LimiterConfig, format string, keyType string, key string, a ...any) (n int, err error) {
+func PrintfD(config *LimiterConfig, format string, keyType string, key string, a ...any) (n int, err error) {
 	if config.Debug {
 		timeString := time.Now().UTC().Format("2006-01-02 15:04:05")
 		args := []any{timeString, keyType, key}
@@ -20,7 +18,7 @@ func PrintfD(config *configiguracao.LimiterConfig, format string, keyType string
 	return 0, nil
 }
 
-func PrintfWD(config *configiguracao.LimiterConfig, format string, a ...any) (n int, err error) {
+func PrintfWD(config *LimiterConfig, format string, a ...any) (n int, err error) {
 	if config.Debug {
 		timeString := time.Now().UTC().Format("2006-01-02 15:04:05")
 		args := []any{timeString}

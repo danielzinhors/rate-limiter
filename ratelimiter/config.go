@@ -1,4 +1,4 @@
-package config
+package ratelimiter
 
 import (
 	"encoding/json"
@@ -7,9 +7,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/danielzinhors/rate-limiter/ratelimiter/internal/adapters"
-	"github.com/danielzinhors/rate-limiter/ratelimiter/internal/helpers"
-	//response_writers "github.com/danielzinhors/rate-limiter/ratelimiter/internal/response_writers"
+	"github.com/danielzinhors/rate-limiter/ratelimiter/adapters"
+	"github.com/danielzinhors/rate-limiter/ratelimiter/response_writer"
 )
 
 const envKeyIPMaxRequestsPerSecond = "RATE_LIMITER_IP_MAX_REQUESTS"
@@ -28,13 +27,13 @@ type RateConfig struct {
 }
 
 type LimiterConfig struct {
-	IP             *RateConfig                                `json:"ip"`
-	Token          *RateConfig                                `json:"token"`
-	CustomTokens   *map[string]*RateConfig                    `json:"tokens"`
-	StorageAdapter adapters.RateLimitStorageAdapter           `json:"-"`
-	ResponseWriter response_writers.RateLimiterResponseWriter `json:"-"`
-	Debug          bool                                       `json:"debug"`
-	DisableEnvs    bool                                       `json:"disableEnvs"`
+	IP             *RateConfig                               `json:"ip"`
+	Token          *RateConfig                               `json:"token"`
+	CustomTokens   *map[string]*RateConfig                   `json:"tokens"`
+	StorageAdapter adapters.RateLimitStorageAdapter          `json:"-"`
+	ResponseWriter response_writer.RateLimiterResponseWriter `json:"-"`
+	Debug          bool                                      `json:"debug"`
+	DisableEnvs    bool                                      `json:"disableEnvs"`
 }
 
 func (c *LimiterConfig) GetRateLimiterRateConfigForToken(token string) (*RateConfig, bool) {
@@ -58,7 +57,7 @@ func getDefaultConfiguration() *LimiterConfig {
 		},
 		CustomTokens:   &map[string]*RateConfig{},
 		StorageAdapter: adapters.NewRateLimitMemoryStorageAdapter(),
-		ResponseWriter: response_writers.NewRateLimiterDefaultResponseWriter(),
+		ResponseWriter: response_writer.NewRateLimiterDefaultResponseWriter(),
 		Debug:          false,
 	}
 }
@@ -71,10 +70,10 @@ func SetConfiguration(config *LimiterConfig) *LimiterConfig {
 	}
 
 	if !config.DisableEnvs {
-		debug, ok := helpers.GetEnvBoolean(envKeyDebug)
+		debug, ok := GetEnvBoolean(envKeyDebug)
 		if ok {
 			config.Debug = debug
-			helpers.PrintfWD(config, "using env %s", envKeyDebug)
+			PrintfWD(config, "using env %s", envKeyDebug)
 		}
 	}
 
@@ -87,7 +86,7 @@ func SetConfiguration(config *LimiterConfig) *LimiterConfig {
 	if config.Debug {
 		jsonConfiguration, err := json.Marshal(config)
 		if err == nil {
-			helpers.PrintfWD(config, "using configuration: %s", jsonConfiguration)
+			PrintfWD(config, "using configuration: %s", jsonConfiguration)
 		}
 	}
 
@@ -100,16 +99,16 @@ func configureIP(config *LimiterConfig, defaultConfiguration *LimiterConfig) {
 	}
 
 	if !config.DisableEnvs {
-		mrps, ok := helpers.GetEnvLargeint(envKeyIPMaxRequestsPerSecond)
+		mrps, ok := GetEnvLargeint(envKeyIPMaxRequestsPerSecond)
 		if ok {
 			config.IP.MaxRequestsPerSecond = mrps
-			helpers.PrintfWD(config, "using env %s", envKeyIPMaxRequestsPerSecond)
+			PrintfWD(config, "using env %s", envKeyIPMaxRequestsPerSecond)
 		}
 
-		bt, ok := helpers.GetEnvLargeint(envKeyIPBlockTimeMilliseconds)
+		bt, ok := GetEnvLargeint(envKeyIPBlockTimeMilliseconds)
 		if ok {
 			config.IP.BlockTimeMilliseconds = bt
-			helpers.PrintfWD(config, "using env %s", envKeyIPBlockTimeMilliseconds)
+			PrintfWD(config, "using env %s", envKeyIPBlockTimeMilliseconds)
 		}
 	}
 }
@@ -120,16 +119,16 @@ func configureToken(config *LimiterConfig, defaultConfiguration *LimiterConfig) 
 	}
 
 	if !config.DisableEnvs {
-		mrps, ok := helpers.GetEnvLargeint(envKeyTokenMaxRequestsPerSecond)
+		mrps, ok := GetEnvLargeint(envKeyTokenMaxRequestsPerSecond)
 		if ok {
 			config.Token.MaxRequestsPerSecond = mrps
-			helpers.PrintfWD(config, "using env %s", envKeyTokenMaxRequestsPerSecond)
+			PrintfWD(config, "using env %s", envKeyTokenMaxRequestsPerSecond)
 		}
 
-		bt, ok := helpers.GetEnvLargeint(envKeyTokenBlockTimeMilliseconds)
+		bt, ok := GetEnvLargeint(envKeyTokenBlockTimeMilliseconds)
 		if ok {
 			config.Token.BlockTimeMilliseconds = bt
-			helpers.PrintfWD(config, "using env %s", envKeyTokenBlockTimeMilliseconds)
+			PrintfWD(config, "using env %s", envKeyTokenBlockTimeMilliseconds)
 		}
 	}
 }
@@ -176,21 +175,21 @@ func getCustomTokenList() *[]string {
 
 func configureCustomToken(config *LimiterConfig, defaultConfiguration *LimiterConfig, customToken string) {
 
-	helpers.PrintfWD(config, "configuring custom token \"%s\"", customToken)
+	PrintfWD(config, "configuring custom token \"%s\"", customToken)
 
 	maxRequestsPerSecondEnvKey := fmt.Sprintf("RATE_LIMITER_TOKEN_%s_MAX_REQUESTS", customToken)
-	maxRequestsPerSecond, ok := helpers.GetEnvLargeint(maxRequestsPerSecondEnvKey)
+	maxRequestsPerSecond, ok := GetEnvLargeint(maxRequestsPerSecondEnvKey)
 	if !ok {
 		defaultValue := config.Token.MaxRequestsPerSecond
-		helpers.PrintfWD(config, "env \"%s\" not found: using default value %d", maxRequestsPerSecondEnvKey, defaultValue)
+		PrintfWD(config, "env \"%s\" not found: using default value %d", maxRequestsPerSecondEnvKey, defaultValue)
 		maxRequestsPerSecond = defaultValue
 	}
 
 	blockTimeMillisecondEnvKey := fmt.Sprintf("RATE_LIMITER_TOKEN_%s_BLOCK_TIME", customToken)
-	blockTimeMilliseconds, ok := helpers.GetEnvLargeint(blockTimeMillisecondEnvKey)
+	blockTimeMilliseconds, ok := GetEnvLargeint(blockTimeMillisecondEnvKey)
 	if !ok {
 		defaultValue := config.Token.BlockTimeMilliseconds
-		helpers.PrintfWD(config, "env \"%s\" not found: using default value %d", blockTimeMillisecondEnvKey, defaultValue)
+		PrintfWD(config, "env \"%s\" not found: using default value %d", blockTimeMillisecondEnvKey, defaultValue)
 		blockTimeMilliseconds = defaultValue
 	}
 
@@ -205,30 +204,30 @@ func configureStorageAdapter(config *LimiterConfig, defaultConfiguration *Limite
 		config.StorageAdapter = defaultConfiguration.StorageAdapter
 	}
 
-	useRedis, ok := helpers.GetEnvBoolean(envUseRedis)
+	useRedis, ok := GetEnvBoolean(envUseRedis)
 	if ok && useRedis {
 		configureRedisStorageAdapter(config)
 	} else if config.StorageAdapter != defaultConfiguration.StorageAdapter {
-		helpers.PrintfWD(config, "using StorageAdapter Custom")
+		PrintfWD(config, "using StorageAdapter Custom")
 	} else {
-		helpers.PrintfWD(config, "using StorageAdapter Default")
+		PrintfWD(config, "using StorageAdapter Default")
 	}
 }
 
 func configureRedisStorageAdapter(config *LimiterConfig) {
-	helpers.PrintfWD(config, "using StorageAdapter Redis")
+	PrintfWD(config, "using StorageAdapter Redis")
 
-	redisAddress, ok := helpers.GetEnvString(envRedisAddress)
+	redisAddress, ok := GetEnvString(envRedisAddress)
 	if !ok {
 		panic(fmt.Sprintf("%s env is required when using redis adapter with env configuration", envRedisAddress))
 	}
 
-	redisPassword, ok := helpers.GetEnvString(envRedisPassword)
+	redisPassword, ok := GetEnvString(envRedisPassword)
 	if !ok {
 		redisPassword = ""
 	}
 
-	redisDB, ok := helpers.GetEnvLargeint(envRedisDB)
+	redisDB, ok := GetEnvLargeint(envRedisDB)
 	if !ok {
 		redisDB = 0
 	}
@@ -242,8 +241,8 @@ func configureResponseWriter(config *LimiterConfig, defaultConfiguration *Limite
 	}
 
 	if config.ResponseWriter != defaultConfiguration.ResponseWriter {
-		helpers.PrintfWD(config, "using ResponseWriter Custom")
+		PrintfWD(config, "using ResponseWriter Custom")
 	} else {
-		helpers.PrintfWD(config, "using ResponseWriter Default")
+		PrintfWD(config, "using ResponseWriter Default")
 	}
 }
