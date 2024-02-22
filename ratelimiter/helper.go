@@ -7,9 +7,11 @@ import (
 	"time"
 )
 
+var StFormat = "2006-01-02 15:04:05"
+
 func PrintfD(config *LimiterConfig, format string, keyType string, key string, a ...any) (n int, err error) {
 	if config.Debug {
-		timeString := time.Now().UTC().Format("2006-01-02 15:04:05")
+		timeString := time.Now().UTC().Format(StFormat)
 		args := []any{timeString, keyType, key}
 		args = append(args, a...)
 		return fmt.Printf("%s [RATE LIMITER][%s][%s] "+format+"\n", args...)
@@ -20,7 +22,7 @@ func PrintfD(config *LimiterConfig, format string, keyType string, key string, a
 
 func PrintfWD(config *LimiterConfig, format string, a ...any) (n int, err error) {
 	if config.Debug {
-		timeString := time.Now().UTC().Format("2006-01-02 15:04:05")
+		timeString := time.Now().UTC().Format(StFormat)
 		args := []any{timeString}
 		args = append(args, a...)
 		return fmt.Printf("%s [RATE LIMITER] "+format+"\n", args...)
@@ -34,8 +36,8 @@ func GetBlockTime(block *time.Time) float64 {
 }
 
 func GetEnvString(key string) (string, bool) {
-	value, ok := os.LookupEnv(key)
-	if !ok {
+	value, encontrou := os.LookupEnv(key)
+	if !encontrou {
 		return "", false
 	}
 	if value == "" {
@@ -45,8 +47,8 @@ func GetEnvString(key string) (string, bool) {
 }
 
 func GetEnvBoolean(key string) (bool, bool) {
-	value, ok := os.LookupEnv(key)
-	if !ok {
+	value, encontrou := os.LookupEnv(key)
+	if !encontrou {
 		return false, false
 	}
 	if value == "" {
@@ -60,8 +62,8 @@ func GetEnvBoolean(key string) (bool, bool) {
 }
 
 func GetEnvLargeint(key string) (int64, bool) {
-	value, ok := os.LookupEnv(key)
-	if !ok {
+	value, encontrou := os.LookupEnv(key)
+	if !encontrou {
 		return 0, false
 	}
 	if value == "" {

@@ -11,15 +11,15 @@ import (
 	"github.com/danielzinhors/rate-limiter/ratelimiter/response_writer"
 )
 
-const envKeyIPMaxRequestsPerSecond = "RATE_LIMITER_IP_MAX_REQUESTS"
-const envKeyIPBlockTimeMilliseconds = "RATE_LIMITER_IP_BLOCK_TIME"
-const envKeyTokenMaxRequestsPerSecond = "RATE_LIMITER_TOKEN_MAX_REQUESTS"
-const envKeyTokenBlockTimeMilliseconds = "RATE_LIMITER_TOKEN_BLOCK_TIME"
-const envKeyDebug = "RATE_LIMITER_DEBUG"
-const envUseRedis = "RATE_LIMITER_USE_REDIS"
-const envRedisAddress = "RATE_LIMITER_REDIS_ADDRESS"
-const envRedisPassword = "RATE_LIMITER_REDIS_PASSWORD"
-const envRedisDB = "RATE_LIMITER_REDIS_DB"
+const envKeyIPMaxRequestsPerSecond = "MAX_REQUESTS_RATE_LIMITER_IP"
+const envKeyIPBlockTimeMilliseconds = "BLOCK_TIME_RATE_LIMITER_IP"
+const envKeyTokenMaxRequestsPerSecond = "MAX_REQUESTS_RATE_LIMITER_TOKEN"
+const envKeyTokenBlockTimeMilliseconds = "BLOCK_TIME_RATE_LIMITER_TOKEN"
+const envKeyDebug = "DEBUG_RATE_LIMITER"
+const envUseRedis = "USE_RATE_LIMITER_REDIS"
+const envRedisAddress = "ADDRESS_RATE_LIMITER_REDIS"
+const envRedisPassword = "PASSWORD_RATE_LIMITER_REDIS"
+const envRedisDB = "DB_RATE_LIMITER_REDIS"
 
 type RateConfig struct {
 	MaxRequestsPerSecond  int64 `json:"maxRequestsPerSecond"`
