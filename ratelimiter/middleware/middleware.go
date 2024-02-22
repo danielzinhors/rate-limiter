@@ -1,4 +1,4 @@
-package middleware_limiter
+package middleware
 
 import (
 	"context"
@@ -7,23 +7,22 @@ import (
 	"time"
 
 	"github.com/danielzinhors/rate-limiter/ratelimiter"
-	configiguracao "github.com/danielzinhors/rate-limiter/ratelimiter"
 )
 
-type rateLimiterCheckFunction = func(ctx context.Context, keyType string, key string, config *configiguracao.LimiterConfig, rateConfig *configiguracao.RateConfig) (*time.Time, error)
+type rateLimiterCheckFunction = func(ctx context.Context, keyType string, key string, config *ratelimiter.LimiterConfig, rateConfig *ratelimiter.RateConfig) (*time.Time, error)
 
 func NewRateLimiter() func(next http.Handler) http.Handler {
 	return NewRateLimiterWithConfig(nil)
 }
 
-func NewRateLimiterWithConfig(config *configiguracao.LimiterConfig) func(next http.Handler) http.Handler {
-	config = configiguracao.SetConfiguration(config)
+func NewRateLimiterWithConfig(config *ratelimiter.LimiterConfig) func(next http.Handler) http.Handler {
+	config = ratelimiter.SetConfiguration(config)
 	return func(next http.Handler) http.Handler {
 		return rateLimiter(config, next, ratelimiter.CheckRateLimit)
 	}
 }
 
-func rateLimiter(config *configiguracao.LimiterConfig, next http.Handler, checkRateLimitFn rateLimiterCheckFunction) http.Handler {
+func rateLimiter(config *ratelimiter.LimiterConfig, next http.Handler, checkRateLimitFn rateLimiterCheckFunction) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var block *time.Time
 		var err error

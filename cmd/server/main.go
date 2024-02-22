@@ -3,7 +3,7 @@ package main
 import (
 	"net/http"
 
-	"github.com/danielzinhors/rate-limiter/ratelimiter/middleware_limiter"
+	my_middleware "github.com/danielzinhors/rate-limiter/ratelimiter/middleware"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
@@ -12,7 +12,7 @@ import (
 func main() {
 	godotenv.Load(".env")
 
-	rateLimiter := middleware_limiter.NewRateLimiter()
+	rateLimiter := my_middleware.NewRateLimiter()
 
 	r := chi.NewRouter()
 

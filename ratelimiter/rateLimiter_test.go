@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/danielzinhors/rate-limiter/ratelimiter/mocks"
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"go.uber.org/mock/gomock"
 )
 
 type RateLimiterTestSuite struct {
